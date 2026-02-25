@@ -1,16 +1,11 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
-using UnityEngine.InputSystem;
 
 public class PlayerKeyInventory : MonoBehaviour
 {
     public static PlayerKeyInventory Instance;
 
-    [Header("Key HUD Slots (bottom of screen)")]
-    public Image[] keySlots;                 // 4 UI Image slots, drag in order
-    public Color lockedColor = new Color(1f, 1f, 1f, 0.2f);    // dim = not collected
-    public Color collectedColor = new Color(1f, 0.85f, 0f, 1f); // gold = collected
+    public KeyHoldDisplay holdDisplay;
 
     private HashSet<int> _collectedKeys = new HashSet<int>();
 
@@ -20,24 +15,19 @@ public class PlayerKeyInventory : MonoBehaviour
             Instance = this;
         else
             Destroy(gameObject);
-
-        ResetHUD();
-    }
-
-    void ResetHUD()
-    {
-        for (int i = 0; i < keySlots.Length; i++)
-        {
-            if (keySlots[i] != null)
-                keySlots[i].color = lockedColor;
-        }
     }
 
     public void CollectKey(int keyID)
     {
+        if (_collectedKeys.Contains(keyID)) return;
+
         _collectedKeys.Add(keyID);
-        UpdateHUD(keyID, true);
-        Debug.Log("Key " + keyID + " collected!");
+        Debug.Log("Collected Key " + keyID);
+
+        if (holdDisplay != null)
+            holdDisplay.ShowKey(keyID);
+        else
+            Debug.LogError("Hold Display is empty! Drag ItemHolder into GameManager.");
     }
 
     public bool HasKey(int keyID)
@@ -48,14 +38,13 @@ public class PlayerKeyInventory : MonoBehaviour
     public void UseKey(int keyID)
     {
         _collectedKeys.Remove(keyID);
-        UpdateHUD(keyID, false);
+
+        if (holdDisplay != null)
+            holdDisplay.HideKey(keyID);
     }
 
-    void UpdateHUD(int keyID, bool collected)
+    public int GetKeyCount()
     {
-        // keyID 1 = slot index 0, keyID 2 = slot index 1, etc.
-        int index = keyID - 1;
-        if (index >= 0 && index < keySlots.Length && keySlots[index] != null)
-            keySlots[index].color = collected ? collectedColor : lockedColor;
+        return _collectedKeys.Count;
     }
 }

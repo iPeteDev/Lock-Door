@@ -16,6 +16,7 @@ public class KeyPickup : MonoBehaviour
 
     private Vector3 _startPosition;
     private bool _playerNearby = false;
+    private bool _collected = false;
 
     void Start()
     {
@@ -27,6 +28,9 @@ public class KeyPickup : MonoBehaviour
 
     void Update()
     {
+        if (_collected) return;
+
+        // Float + spin
         float newY = _startPosition.y + Mathf.Sin(Time.time * floatSpeed) * floatHeight;
         transform.position = new Vector3(_startPosition.x, newY, _startPosition.z);
         transform.Rotate(Vector3.up * rotateSpeed * Time.deltaTime);
@@ -40,6 +44,9 @@ public class KeyPickup : MonoBehaviour
 
     void Collect()
     {
+        _collected = true;
+        _playerNearby = false;
+
         PlayerKeyInventory.Instance.CollectKey(keyID);
 
         if (hintText != null)
@@ -50,6 +57,8 @@ public class KeyPickup : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        if (_collected) return;
+
         if (other.CompareTag("Player"))
         {
             _playerNearby = true;
