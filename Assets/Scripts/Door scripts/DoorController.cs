@@ -1,5 +1,5 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class DoorController : MonoBehaviour
 {
@@ -9,12 +9,14 @@ public class DoorController : MonoBehaviour
     public float slideSpeed = 4f;
 
     [Header("Slide Direction")]
-    public Vector3 slideDirection = Vector3.right;   // change in Inspector if needed
+    public Vector3 slideDirection = Vector3.right;
 
     [Header("UI")]
-    public Text hintText;
+    public TMP_Text hintText;
 
     private bool _isOpen = false;
+    private bool _isSliding = false;
+    private bool _isClosing = false;
     private bool _playerNearby = false;
     private Vector3 _closedPosition;
     private Vector3 _openPosition;
@@ -30,59 +32,89 @@ public class DoorController : MonoBehaviour
 
     void Update()
     {
-        // Animate slide
-        if (_isOpen)
+        // Slide open
+        if (_isSliding)
         {
-            transform.position = Vector3.Lerp(
+            transform.position = Vector3.MoveTowards(
                 transform.position,
                 _openPosition,
-                Time.deltaTime * slideSpeed
+                slideSpeed * Time.deltaTime
             );
+
+            if (Vector3.Distance(transform.position, _openPosition) < 0.01f)
+            {
+                transform.position = _openPosition;
+                _isSliding = false;
+                _isOpen = true;
+            }
         }
 
-        // Player nearby interaction
-        if (_playerNearby && !_isOpen)
+        // Slide close
+        if (_isClosing)
         {
-            UpdateHintText();
+            transform.position = Vector3.MoveTowards(
+                transform.position,
+                _closedPosition,
+                slideSpeed * Time.deltaTime
+            );
 
-            if (Input.GetKeyDown(KeyCode.E))
-                TryOpen();
+            if (Vector3.Distance(transform.position, _closedPosition) < 0.01f)
+            {
+                transform.position = _closedPosition;
+                _isClosing = false;
+                _isOpen = false;
+            }
         }
-    }
 
-    void TryOpen()
-    {
-        if (PlayerKeyInventory.Instance.HasKey(doorID))
+        // Interaction
+        if (_playerNearby && !_isOpen && !_isSliding && !_isClosing)
         {
-            _isOpen = true;
-            PlayerKeyInventory.Instance.UseKey(doorID);
-            HideHint();
+            if (PlayerKeyInventory.Instance.HasKey(doorID))
+            {
+                if (hintText != null)
+                {
+                    hintText.gameObject.SetActive(true);
+                    hintText.text = "[ Press Q to open Door " + doorID + " ]";
+                }
+
+                if (Input.GetKeyDown(KeyCode.Q))
+                    StartSlide();
+            }
+            else
+            {
+                if (hintText != null)
+                {
+                    hintText.gameObject.SetActive(true);
+                    hintText.text = "Collect Key " + doorID + " to unlock this door!";
+                }
+            }
         }
     }
 
-    void UpdateHintText()
+    void StartSlide()
     {
-        if (hintText == null) return;
-        hintText.gameObject.SetActive(true);
+        _isSliding = true;
+        _isClosing = false;
+        PlayerKeyInventory.Instance.UseKey(doorID);
 
-        if (PlayerKeyInventory.Instance.HasKey(doorID))
-            hintText.text = "[E] Open Door " + doorID;
-        else
-            hintText.text = "Collect Key " + doorID + " to unlock this door!";
-    }
-
-    void HideHint()
-    {
         if (hintText != null)
             hintText.gameObject.SetActive(false);
+    }
+
+    public void CloseDoor()
+    {
+        if (_isOpen)
+        {
+            _isOpen = false;
+            _isClosing = true;
+            _isSliding = false;
+        }
     }
 
     void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
-        {
             _playerNearby = true;
-        }
     }
 
     void OnTriggerExit(Collider other)
@@ -90,7 +122,9 @@ public class DoorController : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             _playerNearby = false;
-            HideHint();
+
+            if (hintText != null)
+                hintText.gameObject.SetActive(false);
         }
     }
 }

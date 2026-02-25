@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 
 public class KeyPickup : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class KeyPickup : MonoBehaviour
     public float rotateSpeed = 90f;
 
     [Header("UI")]
-    public GameObject hintText;              // drag HintText UI object here
+    public TMP_Text hintText;
 
     private Vector3 _startPosition;
     private bool _playerNearby = false;
@@ -19,7 +20,9 @@ public class KeyPickup : MonoBehaviour
     void Start()
     {
         _startPosition = transform.position;
-        if (hintText != null) hintText.SetActive(false);
+
+        if (hintText != null)
+            hintText.gameObject.SetActive(false);
     }
 
     void Update()
@@ -38,7 +41,10 @@ public class KeyPickup : MonoBehaviour
     void Collect()
     {
         PlayerKeyInventory.Instance.CollectKey(keyID);
-        if (hintText != null) hintText.SetActive(false);
+
+        if (hintText != null)
+            hintText.gameObject.SetActive(false);
+
         gameObject.SetActive(false);
     }
 
@@ -47,7 +53,12 @@ public class KeyPickup : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             _playerNearby = true;
-            if (hintText != null) hintText.SetActive(true);
+
+            if (hintText != null)
+            {
+                hintText.gameObject.SetActive(true);
+                hintText.text = "[ Press E to collect Key " + keyID + " ]";
+            }
         }
     }
 
@@ -56,7 +67,9 @@ public class KeyPickup : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             _playerNearby = false;
-            if (hintText != null) hintText.SetActive(false);
+
+            if (hintText != null)
+                hintText.gameObject.SetActive(false);
         }
     }
 }
