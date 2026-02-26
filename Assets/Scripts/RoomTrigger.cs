@@ -20,3 +20,5 @@ public class RoomTrigger : MonoBehaviour
             Debug.Log("Player entered room: " + (roomIndex + 1));
         }
     }
+
+}
