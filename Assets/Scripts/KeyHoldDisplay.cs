@@ -1,3 +1,4 @@
+/* 
 using UnityEngine;
 
 public class KeyHoldDisplay : MonoBehaviour
@@ -58,3 +59,47 @@ public class KeyHoldDisplay : MonoBehaviour
                 key.SetActive(false);
     }
 }
+
+*/
+
+using UnityEngine;
+
+public class KeyHoldDisplay : MonoBehaviour
+{
+    [Header("Key Models - assign in order 1 to 4")]
+    public GameObject[] keyModels;
+
+    void Start()
+    {
+        HideAll();
+    }
+
+    // Called by DoorController when player enters zone
+    public void ShowKeyIfOwned(int keyID)
+    {
+        if (!PlayerKeyInventory.Instance.HasKey(keyID)) return;
+        int index = keyID - 1;
+        if (index >= 0 && index < keyModels.Length && keyModels[index] != null)
+            keyModels[index].SetActive(true);
+    }
+
+    // Called by DoorController when player exits zone
+    public void HideKey(int keyID)
+    {
+        int index = keyID - 1;
+        if (index >= 0 && index < keyModels.Length && keyModels[index] != null)
+            keyModels[index].SetActive(false);
+    }
+
+    public void HideAll()
+    {
+        foreach (GameObject key in keyModels)
+            if (key != null) key.SetActive(false);
+    }
+
+    // Keep this for compatibility
+    public void ShowKey(int keyID) { } // no longer auto-shows on pickup
+}
+
+
+
