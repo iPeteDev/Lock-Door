@@ -11,9 +11,9 @@ public class PlayerInventory : MonoBehaviour
     public int maxMedkits = 3;
 
     [Header("UI")]
-    public GameObject medkitSlot;            // the gray box slot UI
-    public TMP_Text medkitCountText;         // shows how many medkits
-    public Image medkitImage;               // medkit icon inside slot
+    public GameObject medkitSlot;
+    public TMP_Text medkitCountText;
+    public Image medkitImage;
 
     private int _medkitCount = 0;
     private PlayerHealth _playerHealth;
@@ -28,7 +28,8 @@ public class PlayerInventory : MonoBehaviour
 
     void Start()
     {
-        _playerHealth = FindObjectOfType<PlayerHealth>();
+        // Fixed for Unity 6
+        _playerHealth = Object.FindFirstObjectByType<PlayerHealth>();
         UpdateUI();
     }
 
@@ -76,9 +77,7 @@ public class PlayerInventory : MonoBehaviour
     {
         if (medkitCountText != null)
             medkitCountText.text = "x" + _medkitCount;
-
         if (medkitSlot != null)
             medkitSlot.SetActive(_medkitCount > 0);
     }
 }
-
